@@ -4,17 +4,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, Sun, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Login logic will be implemented with Supabase integration
-    console.log("Login attempt:", { email, password });
+    setLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast({
+        title: "Erro no login",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou senha incorretos" 
+          : "Erro ao fazer login. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+    
+    setLoading(false);
   };
 
   return (
@@ -81,8 +98,8 @@ export const Login = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" variant="gradient">
-                Entrar
+              <Button type="submit" className="w-full" variant="gradient" disabled={loading}>
+                {loading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
 

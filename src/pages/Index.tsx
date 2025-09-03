@@ -1,12 +1,22 @@
-import { useState } from "react";
 import { Login } from "@/components/Login";
 import { Dashboard } from "@/components/Dashboard";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  // Temporary state to simulate login - will be replaced with Supabase auth
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user, loading } = useAuth();
 
-  if (!isLoggedIn) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return <Login />;
   }
 
