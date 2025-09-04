@@ -14,6 +14,7 @@ export const ProfileSettings = () => {
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [age, setAge] = useState<number | ''>('');
+  const [phone, setPhone] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ export const ProfileSettings = () => {
       setName(profile.name || '');
       setAddress(profile.address || '');
       setAge(profile.age || '');
+      setPhone(profile.phone || '');
       setAvatarUrl(profile.avatar_url || '');
     }
   }, [profile]);
@@ -36,6 +38,7 @@ export const ProfileSettings = () => {
       name,
       address,
       age: age === '' ? null : age,
+      phone: phone || null,
     }).eq('user_id', user.id);
 
     if (error) {
@@ -203,6 +206,21 @@ export const ProfileSettings = () => {
               className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            Telefone (opcional)
+          </Label>
+          <Input 
+            id="phone" 
+            type="tel" 
+            value={phone} 
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Ex: (11) 99999-9999"
+            className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+          />
         </div>
 
         <div className="space-y-2">

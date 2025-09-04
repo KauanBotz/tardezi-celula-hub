@@ -46,6 +46,12 @@
   background: white !important;
 }
 
+/* Garante que o modal customizado fique no topo no desktop */
+.fixed.inset-0.z-50 > div:first-child {
+  margin-top: 0 !important;
+  top: 0 !important;
+}
+
 /* Garante que o modal ocupe toda a tela no mobile */
 @media (max-width: 640px) {
   .fixed.inset-0.z-50 > div:first-child {

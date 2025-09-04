@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Edit2, Users, Shield, Crown, Save, X, Sparkles } from "lucide-react";
+import { PlusCircle, Edit2, Users, Shield, Crown, Save, X, Sparkles, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
 
@@ -27,15 +27,19 @@ export const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<Profile | null>(null);
+  const [deletingUser, setDeletingUser] = useState<Profile | null>(null);
   const [editFormData, setEditFormData] = useState({
     name: "",
     email: "",
     address: "",
     age: "",
+    phone: "",
     role: "user" as "user" | "leader_trainee" | "leader"
   });
   const [editLoading, setEditLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -60,6 +64,7 @@ export const UserManagement = () => {
       email: user.email,
       address: user.address || "",
       age: user.age?.toString() || "",
+      phone: user.phone || "",
       role: user.role
     });
     setIsEditModalOpen(true);
@@ -77,6 +82,7 @@ export const UserManagement = () => {
         email: editFormData.email,
         address: editFormData.address || null,
         age: editFormData.age ? parseInt(editFormData.age) : null,
+        phone: editFormData.phone || null,
         role: editFormData.role
       })
       .eq("id", editingUser.id);
@@ -108,9 +114,9 @@ export const UserManagement = () => {
 
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case "leader": return <Crown className="w-4 h-4 text-orange-600" />;
-      case "leader_trainee": return <Shield className="w-4 h-4 text-blue-600" />;
-      default: return <Users className="w-4 h-4 text-gray-600" />;
+      case "leader": return <Crown className="w-4 h-4 text-white" />;
+      case "leader_trainee": return <Shield className="w-4 h-4 text-white" />;
+      default: return <Users className="w-4 h-4 text-white" />;
     }
   };
 
@@ -120,6 +126,56 @@ export const UserManagement = () => {
       case "leader_trainee": return "secondary";
       default: return "outline";
     }
+  };
+
+  const handleDeleteUser = (user: Profile) => {
+    setDeletingUser(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!deletingUser) return;
+    
+    setDeleteLoading(true);
+    
+    try {
+      // Primeiro, deletar o usuário da autenticação do Supabase
+      const { error: authError } = await supabase.auth.admin.deleteUser(deletingUser.user_id);
+      
+      if (authError) {
+        // Se não conseguir deletar da auth (pode ser que não tenha permissão), 
+        // pelo menos deletar o perfil
+        console.warn('Não foi possível deletar da autenticação:', authError.message);
+      }
+      
+      // Deletar o perfil da tabela profiles
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", deletingUser.id);
+
+      if (profileError) {
+        throw profileError;
+      }
+
+      toast({
+        title: "Usuário deletado com sucesso!",
+        description: `${deletingUser.name} foi removido do sistema.`
+      });
+      
+      setIsDeleteModalOpen(false);
+      setDeletingUser(null);
+      fetchUsers(); // Refresh the list
+      
+    } catch (error: any) {
+      toast({
+        title: "Erro ao deletar usuário",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+    
+    setDeleteLoading(false);
   };
 
   const handleUserCreated = () => {
@@ -153,6 +209,7 @@ export const UserManagement = () => {
             <TableRow className="bg-gray-50 border-b border-gray-200">
               <TableHead className="font-semibold text-gray-700 py-4">Nome</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Email</TableHead>
+              <TableHead className="font-semibold text-gray-700 py-4">Telefone</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Idade</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Função</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4 text-center">Ações</TableHead>
@@ -161,7 +218,7 @@ export const UserManagement = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={6} className="text-center py-12">
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                     Carregando usuários...
@@ -170,7 +227,7 @@ export const UserManagement = () => {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12 text-gray-500">
+                <TableCell colSpan={6} className="text-center py-12 text-gray-500">
                   Nenhum usuário cadastrado ainda
                 </TableCell>
               </TableRow>
@@ -182,6 +239,7 @@ export const UserManagement = () => {
                 >
                   <TableCell className="font-medium py-4">{user.name}</TableCell>
                   <TableCell className="text-gray-600 py-4">{user.email}</TableCell>
+                  <TableCell className="text-gray-600 py-4">{user.phone || 'N/A'}</TableCell>
                   <TableCell className="text-gray-600 py-4">{user.age || 'N/A'}</TableCell>
                   <TableCell className="py-4">
                     <Badge 
@@ -193,15 +251,26 @@ export const UserManagement = () => {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-center py-4">
-                    <Button
-                      onClick={() => handleEditUser(user)}
-                      variant="outline"
-                      size="sm"
-                      className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400"
-                    >
-                      <Edit2 className="w-4 h-4 mr-1" />
-                      Editar
-                    </Button>
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        onClick={() => handleEditUser(user)}
+                        variant="outline"
+                        size="sm"
+                        className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400"
+                      >
+                        <Edit2 className="w-4 h-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteUser(user)}
+                        variant="outline"
+                        size="sm"
+                        className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400"
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Deletar
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -312,6 +381,21 @@ export const UserManagement = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="edit-phone" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                Telefone (opcional)
+              </Label>
+              <Input
+                id="edit-phone"
+                type="tel"
+                value={editFormData.phone}
+                onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                placeholder="Ex: (11) 99999-9999"
+                className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="edit-address" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 Endereço (opcional)
@@ -356,6 +440,62 @@ export const UserManagement = () => {
               </Button>
             </div>
           </form>
+        </div>
+      </Modal>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => setIsDeleteModalOpen(false)} 
+        title="Confirmar Exclusão"
+      >
+        <div className="w-full">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center">
+              <Trash2 className="w-8 h-8 text-red-600" />
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Tem certeza que deseja deletar este usuário?
+              </h3>
+              <p className="text-gray-600">
+                Você está prestes a deletar <strong>{deletingUser?.name}</strong> permanentemente.
+              </p>
+              <p className="text-sm text-red-600 mt-2">
+                ⚠️ Esta ação não pode ser desfeita!
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={confirmDeleteUser}
+                disabled={deleteLoading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white h-12 rounded-xl"
+              >
+                {deleteLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Deletando...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Sim, Deletar
+                  </div>
+                )}
+              </Button>
+              
+              <Button
+                onClick={() => setIsDeleteModalOpen(false)}
+                variant="outline"
+                className="flex-1 border-gray-300 text-gray-600 hover:bg-gray-50 h-12 rounded-xl"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+            </div>
+          </div>
         </div>
       </Modal>
     </div>

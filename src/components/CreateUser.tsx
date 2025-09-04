@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { UserPlus, Send, Users, Shield, Crown, Sparkles } from "lucide-react";
 
 interface CreateUserProps {
@@ -18,47 +18,83 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
     address: "",
     password: "",
     age: "",
+    phone: "",
     role: "user" as "user" | "leader_trainee" | "leader"
   });
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(formData.email, formData.password, {
-      name: formData.name,
-      address: formData.address,
-      age: formData.age ? parseInt(formData.age) : undefined,
-      role: formData.role
-    });
+    try {
+      // Criar usuário usando a API de admin (não faz login automaticamente)
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email,
+        password: formData.password,
+        email_confirm: true, // Confirma o email automaticamente
+        user_metadata: {
+          name: formData.name,
+          address: formData.address,
+          age: formData.age ? parseInt(formData.age) : undefined,
+          phone: formData.phone,
+          role: formData.role
+        }
+      });
 
-    if (error) {
+      if (authError) {
+        throw authError;
+      }
+
+      if (authData.user) {
+        // Criar o perfil na tabela profiles
+        const profileData = {
+          user_id: authData.user.id,
+          name: formData.name,
+          email: formData.email,
+          address: formData.address || null,
+          age: formData.age && formData.age.trim() !== '' ? parseInt(formData.age) : null,
+          phone: formData.phone || null,
+          role: formData.role
+        };
+        
+        console.log('Dados do perfil a serem inseridos:', profileData);
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert(profileData);
+
+        if (profileError) {
+          throw profileError;
+        }
+
+        toast({
+          title: "Usuário criado com sucesso! ✨",
+          description: `${formData.name} foi cadastrado(a) no sistema com o perfil de ${getRoleName(formData.role)}.`
+        });
+
+        setFormData({
+          name: "",
+          email: "",
+          address: "",
+          password: "",
+          age: "",
+          phone: "",
+          role: "user"
+        });
+        
+        // Chama o callback se fornecido
+        if (onUserCreated) {
+          onUserCreated();
+        }
+      }
+    } catch (error: any) {
       toast({
         title: "Erro ao criar usuário",
         description: error.message,
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "Usuário criado com sucesso! ✨",
-        description: `${formData.name} foi cadastrado(a) no sistema com o perfil de ${getRoleName(formData.role)}.`
-      });
-      setFormData({
-        name: "",
-        email: "",
-        address: "",
-        password: "",
-        age: "",
-        role: "user"
-      });
-      
-      // Chama o callback se fornecido
-      if (onUserCreated) {
-        onUserCreated();
-      }
     }
 
     setLoading(false);
@@ -150,6 +186,21 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
               className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
             />
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            Telefone (opcional)
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            placeholder="Ex: (11) 99999-9999"
+            className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+          />
         </div>
 
         <div className="space-y-2">
