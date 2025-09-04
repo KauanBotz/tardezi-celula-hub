@@ -13,7 +13,7 @@ import { ArrowLeft, Plus, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 
 type Testimony = Database['public']['Tables']['testimonies']['Row'] & {
-  profiles: { name: string, avatar_url: string }[];
+  profiles: { name: string, avatar_url: string };
   testimony_responses: { id: string, content: string, created_at: string, profiles: { name: string, avatar_url: string } }[];
 };
 

@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { CreateDailyWord } from "@/components/CreateDailyWord";
+import { Modal } from "@/components/ui/modal";
 
 type DailyWord = Database['public']['Tables']['daily_word']['Row'] & {
   profiles: { name: string; avatar_url: string | null; } | null;
@@ -17,6 +18,7 @@ type DailyWord = Database['public']['Tables']['daily_word']['Row'] & {
 const DailyWord = () => {
   const [dailyWords, setDailyWords] = useState<DailyWord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { user } = useAuth();
 
   const fetchDailyWords = async () => {
@@ -48,6 +50,11 @@ const DailyWord = () => {
   const latestWord = dailyWords?.[0];
   const historyWords = dailyWords?.slice(1);
   const isLeader = user && (user.user_metadata?.role === 'leader' || user.user_metadata?.role === 'leader_trainee');
+
+  const handleDailyWordCreated = () => {
+    fetchDailyWords();
+    setIsCreateModalOpen(false);
+  };
 
   if (loading) {
     return (
@@ -90,7 +97,7 @@ const DailyWord = () => {
         {isLeader && (
           <div className="mb-6">
             <Button 
-              onClick={() => {/* TODO: Implementar modal de criação */}}
+              onClick={() => setIsCreateModalOpen(true)}
               className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl shadow-lg"
             >
               <Plus className="mr-2 h-5 w-5" />
@@ -180,7 +187,7 @@ const DailyWord = () => {
               <p className="text-gray-500 mb-6 text-lg">Aguardando a primeira mensagem inspiradora da comunidade</p>
               {isLeader && (
                 <Button 
-                  onClick={() => {/* TODO: Implementar modal de criação */}}
+                  onClick={() => setIsCreateModalOpen(true)}
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-3 text-lg"
                 >
                   <Plus className="mr-2 h-5 w-5" />
@@ -190,6 +197,15 @@ const DailyWord = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Modal de criação */}
+        <Modal 
+          isOpen={isCreateModalOpen} 
+          onClose={() => setIsCreateModalOpen(false)}
+          title="Nova Palavra do Dia"
+        >
+          <CreateDailyWord onDailyWordCreated={handleDailyWordCreated} />
+        </Modal>
       </div>
     </div>
   );
