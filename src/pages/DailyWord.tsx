@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, Plus } from "lucide-react";
+import { ArrowLeft, BookOpen, Plus, Edit3 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { CreateDailyWord } from "@/components/CreateDailyWord";
+import { EditDailyWord } from "@/components/EditDailyWord";
 import { Modal } from "@/components/ui/modal";
 
 type DailyWord = Database['public']['Tables']['daily_word']['Row'] & {
@@ -19,6 +20,8 @@ const DailyWord = () => {
   const [dailyWords, setDailyWords] = useState<DailyWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingWord, setEditingWord] = useState<DailyWord | null>(null);
   const { user } = useAuth();
 
   const fetchDailyWords = async () => {
@@ -54,6 +57,36 @@ const DailyWord = () => {
   const handleDailyWordCreated = () => {
     fetchDailyWords();
     setIsCreateModalOpen(false);
+  };
+
+  const handleEditWord = (word: DailyWord) => {
+    setEditingWord(word);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDailyWordUpdated = () => {
+    fetchDailyWords();
+    setIsEditModalOpen(false);
+    setEditingWord(null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
+    setEditingWord(null);
+  };
+
+  // Função para renderizar HTML simples
+  const renderHtmlContent = (content: string) => {
+    return (
+      <div 
+        className="whitespace-pre-wrap text-gray-700 text-lg leading-relaxed"
+        dangerouslySetInnerHTML={{ 
+          __html: content
+            .replace(/\n/g, '<br>')
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts por segurança
+        }} 
+      />
+    );
   };
 
   if (loading) {
@@ -111,7 +144,20 @@ const DailyWord = () => {
           <>
             <Card className="mb-6 shadow-lg border-0">
               <CardHeader className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-xl">
-                <CardTitle className="text-2xl">{latestWord.title}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-2xl">{latestWord.title}</CardTitle>
+                  {isLeader && user?.id === latestWord.created_by && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditWord(latestWord)}
+                      className="bg-white/20 border-white/30 text-white hover:bg-white/30 hover:border-white/50"
+                    >
+                      <Edit3 className="w-4 h-4 mr-2" />
+                      Editar
+                    </Button>
+                  )}
+                </div>
                 <div className="flex items-center space-x-3 text-sm text-orange-100 pt-2">
                   <Avatar className="h-6 w-6 overflow-hidden">
                     <AvatarImage 
@@ -135,7 +181,7 @@ const DailyWord = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-6">
-                <p className="whitespace-pre-wrap text-gray-700 text-lg leading-relaxed">{latestWord.content}</p>
+                {renderHtmlContent(latestWord.content)}
               </CardContent>
             </Card>
             
@@ -146,10 +192,25 @@ const DailyWord = () => {
                   {historyWords.map(word => (
                      <AccordionItem value={word.id} key={word.id} className="border border-gray-200 rounded-xl overflow-hidden shadow-md">
                         <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-3">
-                              <BookOpen className="w-5 h-5 text-orange-600" />
-                              <span className="font-semibold text-gray-800">{word.title}</span>
-                              <span className="text-sm text-gray-500">- {new Date(word.created_at).toLocaleDateString('pt-BR')}</span>
+                            <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center gap-3">
+                                <BookOpen className="w-5 h-5 text-orange-600" />
+                                <span className="font-semibold text-gray-800">{word.title}</span>
+                                <span className="text-sm text-gray-500">- {new Date(word.created_at).toLocaleDateString('pt-BR')}</span>
+                              </div>
+                              {isLeader && user?.id === word.created_by && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditWord(word);
+                                  }}
+                                  className="mr-4 border-orange-300 text-orange-600 hover:bg-orange-50"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pb-4">
@@ -170,7 +231,9 @@ const DailyWord = () => {
                                 </Avatar>
                                 <span>Postado por {word.profiles?.name || 'Usuário Anônimo'}</span>
                               </div>
-                              <p className="whitespace-pre-wrap text-gray-700 leading-relaxed">{word.content}</p>
+                              <div className="text-gray-700 leading-relaxed">
+                                {renderHtmlContent(word.content)}
+                              </div>
                             </div>
                         </AccordionContent>
                     </AccordionItem>
@@ -205,6 +268,21 @@ const DailyWord = () => {
           title="Nova Palavra do Dia"
         >
           <CreateDailyWord onDailyWordCreated={handleDailyWordCreated} />
+        </Modal>
+
+        {/* Modal de edição */}
+        <Modal 
+          isOpen={isEditModalOpen} 
+          onClose={handleCancelEdit}
+          title="Editar Palavra do Dia"
+        >
+          {editingWord && (
+            <EditDailyWord 
+              dailyWord={editingWord}
+              onDailyWordUpdated={handleDailyWordUpdated} 
+              onCancel={handleCancelEdit}
+            />
+          )}
         </Modal>
       </div>
     </div>

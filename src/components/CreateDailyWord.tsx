@@ -104,6 +104,9 @@ export const CreateDailyWord = ({ onDailyWordCreated }: { onDailyWordCreated: ()
               >
                 <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                 Conteúdo da Palavra
+                <span className="text-xs text-gray-500 ml-2">
+                  (Suporte: &lt;strong&gt;, &lt;br&gt;, &lt;em&gt;, &lt;u&gt;)
+                </span>
               </Label>
               <div className="relative">
                 <Textarea
