@@ -23,19 +23,30 @@ export const CreateDailyWord = ({ onDailyWordCreated }: { onDailyWordCreated: ()
       return;
     }
 
+    console.log('=== DEBUG DAILY WORD ===');
+    console.log('Usuário logado:', user);
+    console.log('Título:', title);
+    console.log('Conteúdo:', content);
+    console.log('User ID:', user.id);
+
     setLoading(true);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("daily_word")
-      .insert([{ title, content, created_by: user.id }]);
+      .insert([{ title, content, created_by: user.id }])
+      .select();
+
+    console.log('Resultado da inserção:', { data, error });
 
     if (error) {
+      console.error('Erro detalhado:', error);
       toast({
         title: "Erro ao postar a Palavra do Dia",
         description: error.message,
         variant: "destructive",
       });
     } else {
+      console.log('Palavra do dia criada com sucesso:', data);
       toast({
         title: "Palavra do Dia postada com sucesso! ✨",
         description: "Sua mensagem inspiracional foi compartilhada com todos",
