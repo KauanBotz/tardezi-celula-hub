@@ -129,6 +129,33 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_read: boolean
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_read?: boolean
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_read?: boolean
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prayer_requests: {
         Row: {
           content: string
@@ -333,7 +360,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      daily_word_with_creator: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          creator_avatar: string | null
+          creator_name: string | null
+          id: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_word_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_user_role: {
