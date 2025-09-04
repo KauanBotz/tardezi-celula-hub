@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useUserCreation } from "@/hooks/useUserCreation";
 import { UserPlus, Send, Users, Shield, Crown, Sparkles } from "lucide-react";
 
 interface CreateUserProps {
@@ -21,83 +21,49 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
     phone: "",
     role: "user" as "user" | "leader_trainee" | "leader"
   });
-  const [loading, setLoading] = useState(false);
+  const { createUser, loading } = useUserCreation();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      // Criar usuário usando a API de admin (não faz login automaticamente)
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: formData.password,
-        email_confirm: true, // Confirma o email automaticamente
-        user_metadata: {
-          name: formData.name,
-          address: formData.address,
-          age: formData.age ? parseInt(formData.age) : undefined,
-          phone: formData.phone,
-          role: formData.role
-        }
+    const result = await createUser({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      address: formData.address,
+      age: formData.age,
+      phone: formData.phone,
+      role: formData.role
+    });
+
+    if (result.success) {
+      toast({
+        title: "Usuário criado com sucesso! ✨",
+        description: `${formData.name} foi cadastrado(a) no sistema com o perfil de ${getRoleName(formData.role)}.`
       });
 
-      if (authError) {
-        throw authError;
+      setFormData({
+        name: "",
+        email: "",
+        address: "",
+        password: "",
+        age: "",
+        phone: "",
+        role: "user"
+      });
+      
+      // Chama o callback se fornecido
+      if (onUserCreated) {
+        onUserCreated();
       }
-
-      if (authData.user) {
-        // Criar o perfil na tabela profiles
-        const profileData = {
-          user_id: authData.user.id,
-          name: formData.name,
-          email: formData.email,
-          address: formData.address || null,
-          age: formData.age && formData.age.trim() !== '' ? parseInt(formData.age) : null,
-          phone: formData.phone || null,
-          role: formData.role
-        };
-        
-        console.log('Dados do perfil a serem inseridos:', profileData);
-        
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert(profileData);
-
-        if (profileError) {
-          throw profileError;
-        }
-
-        toast({
-          title: "Usuário criado com sucesso! ✨",
-          description: `${formData.name} foi cadastrado(a) no sistema com o perfil de ${getRoleName(formData.role)}.`
-        });
-
-        setFormData({
-          name: "",
-          email: "",
-          address: "",
-          password: "",
-          age: "",
-          phone: "",
-          role: "user"
-        });
-        
-        // Chama o callback se fornecido
-        if (onUserCreated) {
-          onUserCreated();
-        }
-      }
-    } catch (error: any) {
+    } else {
       toast({
         title: "Erro ao criar usuário",
-        description: error.message,
+        description: result.error,
         variant: "destructive"
       });
     }
-
-    setLoading(false);
   };
 
   const getRoleName = (role: string) => {
@@ -226,7 +192,7 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
             <SelectTrigger className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base">
               <SelectValue placeholder="Selecione o tipo de usuário" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[10000]">
               <SelectItem value="user">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-gray-600" />

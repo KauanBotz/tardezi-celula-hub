@@ -75,25 +75,41 @@ export const UserManagement = () => {
     
     setEditLoading(true);
     
-    const { error } = await supabase
+    const updateData = {
+      name: editFormData.name,
+      email: editFormData.email,
+      address: editFormData.address || null,
+      age: editFormData.age && editFormData.age.trim() !== '' ? parseInt(editFormData.age) : null,
+      phone: editFormData.phone || null,
+      role: editFormData.role
+    };
+    
+    console.log('=== DEBUG UPDATE ===');
+    console.log('Usuário sendo editado:', editingUser);
+    console.log('Dados do formulário:', editFormData);
+    console.log('Dados para update:', updateData);
+    console.log('ID da tabela profiles:', editingUser.id);
+    console.log('User ID (chave estrangeira):', editingUser.user_id);
+    console.log('Idade original:', editFormData.age);
+    console.log('Idade processada:', updateData.age);
+    
+    const { data, error } = await supabase
       .from("profiles")
-      .update({
-        name: editFormData.name,
-        email: editFormData.email,
-        address: editFormData.address || null,
-        age: editFormData.age ? parseInt(editFormData.age) : null,
-        phone: editFormData.phone || null,
-        role: editFormData.role
-      })
-      .eq("id", editingUser.id);
+      .update(updateData)
+      .eq("user_id", editingUser.user_id)
+      .select();
+
+    console.log('Resultado do update:', { data, error });
 
     if (error) {
+      console.error('Erro ao atualizar:', error);
       toast({
         title: "Erro ao atualizar usuário",
         description: error.message,
         variant: "destructive"
       });
     } else {
+      console.log('Usuário atualizado com sucesso:', data);
       toast({
         title: "Usuário atualizado com sucesso!",
         description: `${editFormData.name} foi atualizado no sistema.`
@@ -152,7 +168,7 @@ export const UserManagement = () => {
       const { error: profileError } = await supabase
         .from("profiles")
         .delete()
-        .eq("id", deletingUser.id);
+        .eq("user_id", deletingUser.user_id);
 
       if (profileError) {
         throw profileError;
@@ -356,7 +372,7 @@ export const UserManagement = () => {
                   <SelectTrigger className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[10000]">
                     <SelectItem value="user">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-gray-600" />

@@ -52,6 +52,16 @@
   top: 0 !important;
 }
 
+/* Força o modal a ficar no topo absoluto da viewport */
+.fixed.inset-0.z-50 {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 9999 !important;
+}
+
 /* Garante que o modal ocupe toda a tela no mobile */
 @media (max-width: 640px) {
   .fixed.inset-0.z-50 > div:first-child {
