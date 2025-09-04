@@ -75,41 +75,25 @@ export const UserManagement = () => {
     
     setEditLoading(true);
     
-    const updateData = {
-      name: editFormData.name,
-      email: editFormData.email,
-      address: editFormData.address || null,
-      age: editFormData.age && editFormData.age.trim() !== '' ? parseInt(editFormData.age) : null,
-      phone: editFormData.phone || null,
-      role: editFormData.role
-    };
-    
-    console.log('=== DEBUG UPDATE ===');
-    console.log('Usuário sendo editado:', editingUser);
-    console.log('Dados do formulário:', editFormData);
-    console.log('Dados para update:', updateData);
-    console.log('ID da tabela profiles:', editingUser.id);
-    console.log('User ID (chave estrangeira):', editingUser.user_id);
-    console.log('Idade original:', editFormData.age);
-    console.log('Idade processada:', updateData.age);
-    
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("profiles")
-      .update(updateData)
-      .eq("user_id", editingUser.user_id)
-      .select();
-
-    console.log('Resultado do update:', { data, error });
+      .update({
+        name: editFormData.name,
+        email: editFormData.email,
+        address: editFormData.address || null,
+        age: editFormData.age ? parseInt(editFormData.age) : null,
+        phone: editFormData.phone || null,
+        role: editFormData.role
+      })
+      .eq("id", editingUser.id);
 
     if (error) {
-      console.error('Erro ao atualizar:', error);
       toast({
         title: "Erro ao atualizar usuário",
         description: error.message,
         variant: "destructive"
       });
     } else {
-      console.log('Usuário atualizado com sucesso:', data);
       toast({
         title: "Usuário atualizado com sucesso!",
         description: `${editFormData.name} foi atualizado no sistema.`
@@ -168,7 +152,7 @@ export const UserManagement = () => {
       const { error: profileError } = await supabase
         .from("profiles")
         .delete()
-        .eq("user_id", deletingUser.user_id);
+        .eq("id", deletingUser.id);
 
       if (profileError) {
         throw profileError;
