@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
+import { Link } from "react-router-dom";
 import { 
-  Calendar,
   Users,
   Heart,
   BookOpen,
@@ -17,23 +17,25 @@ import {
   Sun,
   LogOut,
   MessageSquare,
-  Share
+  Shield,
+  Calendar as CalendarIcon
 } from "lucide-react";
+import { EventCalendar } from "./EventCalendar"; // Apenas este componente de calendário é necessário
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
-type Event = Database['public']['Tables']['events']['Row'];
-type Attendance = Database['public']['Tables']['attendance']['Row'];
+type Event = Database['public']['Tables']['events']['Row']; // Precisamos deste tipo de volta
 
 export const Dashboard = () => {
   const { profile, signOut, loading } = useAuth();
   const [leaders, setLeaders] = useState<Profile[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Event[]>([]); // O estado dos eventos volta para cá
   const [attendanceStats, setAttendanceStats] = useState({ present: 0, total: 0 });
+  const isLeader = profile?.role === 'leader' || profile?.role === 'leader_trainee';
 
   useEffect(() => {
     if (profile) {
       loadLeaders();
-      loadEvents();
+      loadEvents(); // A função de carregar eventos volta para cá
       loadAttendanceStats();
     }
   }, [profile]);
@@ -47,7 +49,8 @@ export const Dashboard = () => {
     
     if (data) setLeaders(data);
   };
-
+  
+  // A função para carregar os próximos eventos para o card do topo
   const loadEvents = async () => {
     const { data } = await supabase
       .from('events')
@@ -95,25 +98,27 @@ export const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-orange rounded-xl flex items-center justify-center">
-                <Sun className="w-6 h-6 text-white" />
-              </div>
               <div>
-                <h1 className="font-bold text-lg">TARDEZINHA</h1>
+                <h1 className="font-bold text-lg text-primary">TARDEZINHA</h1>
                 <p className="text-sm text-muted-foreground">Bem-vindo, {profile.name}!</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-2">
+              {isLeader && (
+                <Button asChild variant="ghost" size="icon">
+                  <Link to="/admin" title="Painel do Líder">
+                    <Shield className="w-5 h-5" />
+                  </Link>
+                </Button>
+              )}
               <Button variant="ghost" size="icon">
-                <Bell className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon">
+                <Link to="/settings" title="Configurações">
                 <Settings className="w-5 h-5" />
+                </Link>
               </Button>
               <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="w-5 h-5" />
@@ -170,8 +175,17 @@ export const Dashboard = () => {
                 <div className="space-y-4">
                   {leaders.length > 0 ? leaders.map((leader) => (
                     <div key={leader.id} className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
-                      <Avatar className="w-12 h-12">
-                        {leader.avatar_url && <AvatarImage src={leader.avatar_url} />}
+                      <Avatar className="w-12 h-12 overflow-hidden">
+                        {leader.avatar_url && (
+                          <AvatarImage 
+                            src={leader.avatar_url} 
+                            className="object-cover object-center"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                            }}
+                          />
+                        )}
                         <AvatarFallback className={leader.role === 'leader' ? 'bg-gradient-orange text-white' : 'bg-primary text-white'}>
                           {leader.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
@@ -196,11 +210,11 @@ export const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Próximos Eventos */}
+            {/* Próximos Eventos (Card original de volta) */}
             <Card className="shadow-medium">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-primary" />
+                  <CalendarIcon className="w-5 h-5 text-primary" />
                   Próximos Eventos
                 </CardTitle>
               </CardHeader>
@@ -215,7 +229,7 @@ export const Dashboard = () => {
                     let timeLabel = '';
                     if (diffDays === 0) timeLabel = 'Hoje';
                     else if (diffDays === 1) timeLabel = 'Amanhã';
-                    else if (diffDays > 1) timeLabel = `${diffDays} dias`;
+                    else if (diffDays > 1) timeLabel = `Em ${diffDays} dias`;
                     else timeLabel = 'Passado';
                     
                     return (
@@ -226,7 +240,7 @@ export const Dashboard = () => {
                             {eventDate.toLocaleDateString('pt-BR')} às {eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
-                        <Badge variant={diffDays === 0 ? 'outline' : 'secondary'}>{timeLabel}</Badge>
+                        <Badge variant={diffDays <= 1 ? 'outline' : 'secondary'}>{timeLabel}</Badge>
                       </div>
                     );
                   }) : (
@@ -249,28 +263,33 @@ export const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                  <Heart className="w-6 h-6 text-primary" />
-                  <span className="text-sm font-medium">Pedidos de Oração</span>
+                <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                  <Link to="/pedidos-de-oracao">
+                    <Heart className="w-6 h-6 text-primary" />
+                    <span className="text-sm font-medium">Pedidos de Oração</span>
+                  </Link>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                  <MessageSquare className="w-6 h-6 text-primary" />
-                  <span className="text-sm font-medium">Testemunhos</span>
+                <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                  <Link to="/testemunhos">
+                    <MessageSquare className="w-6 h-6 text-primary" />
+                    <span className="text-sm font-medium">Testemunhos</span>
+                  </Link>
                 </Button>
                 
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                  <BookOpen className="w-6 h-6 text-primary" />
-                  <span className="text-sm font-medium">Palavra do Dia</span>
-                </Button>
-                
-                <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                  <Calendar className="w-6 h-6 text-primary" />
-                  <span className="text-sm font-medium">Agenda</span>
+                <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                  <Link to="/palavra-do-dia">
+                    <BookOpen className="w-6 h-6 text-primary" />
+                    <span className="text-sm font-medium">Palavra do Dia</span>
+                  </Link>
                 </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* Agenda da Célula (Calendário interativo) */}
+          <EventCalendar />
+
         </div>
       </div>
     </div>

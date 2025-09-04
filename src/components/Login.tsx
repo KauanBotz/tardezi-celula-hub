@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Eye, EyeOff, Sun, User } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,8 +43,7 @@ export const Login = () => {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-orange rounded-2xl mb-4 shadow-medium">
             <Sun className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">TARDEZINHA</h1>
-          <p className="text-muted-foreground">Gestão de Célula Cristã</p>
+          <h1 className="text-3xl font-bold text-foreground">TARDEZINHA</h1>
         </div>
 
         {/* Login Form */}
@@ -106,7 +106,7 @@ export const Login = () => {
             <div className="mt-6 text-center">
               <p className="text-sm text-muted-foreground">
                 Problemas para acessar?{" "}
-                <button className="text-primary hover:underline font-medium">
+                <button className="text-primary hover:none font-medium cursor-default">
                   Fale com seu líder
                 </button>
               </p>
@@ -117,7 +117,8 @@ export const Login = () => {
         {/* Footer */}
         <div className="text-center mt-8">
           <p className="text-xs text-muted-foreground">
-            © 2024 TARDEZINHA - Conectando corações em célula
+            © 2025 TARDEZINHA -
+            Desenvolvido por Kauan Gabriel
           </p>
         </div>
       </div>

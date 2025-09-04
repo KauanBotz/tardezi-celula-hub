@@ -2,12 +2,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { UserPlus, Send, Users, Shield, Crown, Sparkles } from "lucide-react";
 
-export const CreateUser = () => {
+interface CreateUserProps {
+  onUserCreated?: () => void;
+}
+
+export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -23,14 +27,14 @@ export const CreateUser = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const { error } = await signUp(formData.email, formData.password, {
       name: formData.name,
       address: formData.address,
       age: formData.age ? parseInt(formData.age) : undefined,
       role: formData.role
     });
-    
+
     if (error) {
       toast({
         title: "Erro ao criar usuário",
@@ -39,8 +43,8 @@ export const CreateUser = () => {
       });
     } else {
       toast({
-        title: "Usuário criado com sucesso!",
-        description: `${formData.name} foi cadastrado(a) no sistema.`
+        title: "Usuário criado com sucesso! ✨",
+        description: `${formData.name} foi cadastrado(a) no sistema com o perfil de ${getRoleName(formData.role)}.`
       });
       setFormData({
         name: "",
@@ -50,88 +54,182 @@ export const CreateUser = () => {
         age: "",
         role: "user"
       });
+      
+      // Chama o callback se fornecido
+      if (onUserCreated) {
+        onUserCreated();
+      }
     }
-    
+
     setLoading(false);
   };
 
+  const getRoleName = (role: string) => {
+    switch (role) {
+      case "leader": return "Líder";
+      case "leader_trainee": return "Líder em Treinamento";
+      default: return "Usuário Comum";
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case "leader": return <Crown className="w-4 h-4 text-orange-600" />;
+      case "leader_trainee": return <Shield className="w-4 h-4 text-blue-600" />;
+      default: return <Users className="w-4 h-4 text-gray-600" />;
+    }
+  };
+
   return (
-    <Card className="max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>Criar Novo Usuário</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Nome Completo</Label>
+    <div className="w-full">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              Nome Completo
+            </Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Ex: João Silva Santos"
+              className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
               required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="email">E-mail</Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              E-mail
+            </Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="joao@exemplo.com"
+              className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
               required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="password">Senha</Label>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              Senha
+            </Label>
             <Input
               id="password"
               type="password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="Mínimo 6 caracteres"
+              minLength={6}
+              className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
               required
             />
           </div>
-          
-          <div>
-            <Label htmlFor="address">Endereço</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="age">Idade</Label>
+
+          <div className="space-y-2">
+            <Label htmlFor="age" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              Idade
+            </Label>
             <Input
               id="age"
               type="number"
               value={formData.age}
               onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+              placeholder="Ex: 25"
+              min="1"
+              max="120"
+              className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
             />
           </div>
-          
-          <div>
-            <Label htmlFor="role">Tipo de Usuário</Label>
-            <Select value={formData.role} onValueChange={(value: "user" | "leader_trainee" | "leader") => setFormData({ ...formData, role: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Usuário Comum</SelectItem>
-                <SelectItem value="leader_trainee">Líder em Treinamento</SelectItem>
-                <SelectItem value="leader">Líder</SelectItem>
-              </SelectContent>
-            </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="address" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            Endereço (opcional)
+          </Label>
+          <Input
+            id="address"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="Rua, número, bairro, cidade"
+            className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="role" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+            Tipo de Usuário
+          </Label>
+          <Select value={formData.role} onValueChange={(value: "user" | "leader_trainee" | "leader") => setFormData({ ...formData, role: value })}>
+            <SelectTrigger className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base">
+              <SelectValue placeholder="Selecione o tipo de usuário" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="user">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-gray-600" />
+                  Usuário Comum
+                </div>
+              </SelectItem>
+              <SelectItem value="leader_trainee">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  Líder em Treinamento
+                </div>
+              </SelectItem>
+              <SelectItem value="leader">
+                <div className="flex items-center gap-2">
+                  <Crown className="w-4 h-4 text-orange-600" />
+                  Líder Principal
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mt-2">
+            <div className="flex items-center gap-2 text-sm text-gray-700">
+              {getRoleIcon(formData.role)}
+              <strong>Selecionado:</strong> {getRoleName(formData.role)}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              {formData.role === "leader" && "Acesso completo ao sistema, pode gerenciar usuários e eventos."}
+              {formData.role === "leader_trainee" && "Pode criar eventos e gerenciar conteúdo, mas não usuários."}
+              {formData.role === "user" && "Acesso básico: pode participar de eventos e interagir com conteúdo."}
+            </p>
           </div>
-          
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Criando..." : "Criar Usuário"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:transform-none"
+          disabled={loading}
+        >
+          <div className="flex items-center gap-2">
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                Criando usuário...
+              </>
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                Criar Usuário
+              </>
+            )}
+          </div>
+        </Button>
+      </form>
+    </div>
   );
 };

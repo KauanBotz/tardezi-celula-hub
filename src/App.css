@@ -40,3 +40,125 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Estilos para o modal customizado */
+.fixed.inset-0.z-50 {
+  background: white !important;
+}
+
+/* Garante que o modal ocupe toda a tela no mobile */
+@media (max-width: 640px) {
+  .fixed.inset-0.z-50 > div:first-child {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    left: 0 !important;
+    top: 0 !important;
+    position: fixed !important;
+  }
+  
+  /* Remove qualquer padding ou margin do body/html que possa estar causando espaçamento */
+  .fixed.inset-0.z-50 {
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Estilos personalizados para modais mobile */
+@media (max-width: 640px) {
+  [data-radix-dialog-content] {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    left: 0 !important;
+    top: 0 !important;
+  }
+  
+  /* Remove qualquer overlay restante */
+  [data-radix-dialog-overlay] {
+    background: transparent !important;
+  }
+}
+
+/* Garante que os modais ocupem toda a tela no mobile */
+[data-state="open"] [data-radix-dialog-content] {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  left: 0 !important;
+  top: 0 !important;
+}
+
+/* Remove o fundo preto transparente */
+[data-radix-dialog-overlay] {
+  background: transparent !important;
+}
+
+/* Estilos para imagens de perfil perfeitas */
+[data-radix-avatar-image] {
+  object-fit: cover !important;
+  object-position: center !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Garante que todos os avatares tenham overflow hidden */
+[data-radix-avatar-root] {
+  overflow: hidden !important;
+  border-radius: 50% !important;
+}
+
+/* Tamanhos padrão para avatares em diferentes contextos */
+.avatar-small {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+}
+
+.avatar-medium {
+  width: 3rem !important;
+  height: 3rem !important;
+}
+
+.avatar-large {
+  width: 6rem !important;
+  height: 6rem !important;
+}
+
+/* Garante que as imagens de perfil sejam sempre circulares e bem proporcionadas */
+.avatar-image {
+  object-fit: cover !important;
+  object-position: center !important;
+  border-radius: 50% !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Fallback para imagens quebradas */
+.avatar-fallback {
+  background: linear-gradient(135deg, #f97316 0%, #dc2626 100%) !important;
+  color: white !important;
+  font-weight: bold !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Hover effect para avatares */
+.avatar-container:hover .avatar-image {
+  transform: scale(1.05) !important;
+}

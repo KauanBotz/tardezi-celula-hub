@@ -10,7 +10,7 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      "relative flex shrink-0 overflow-hidden rounded-full",
       className
     )}
     {...props}
@@ -24,7 +24,15 @@ const AvatarImage = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
+    className={cn(
+      "aspect-square h-full w-full object-cover object-center transition-all duration-200",
+      className
+    )}
+    onError={(e) => {
+      // Fallback automático para imagens quebradas
+      const target = e.target as HTMLImageElement;
+      target.style.display = 'none';
+    }}
     {...props}
   />
 ))
@@ -37,7 +45,7 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold transition-all duration-200",
       className
     )}
     {...props}
