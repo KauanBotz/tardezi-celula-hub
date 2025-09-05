@@ -1,12 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import Cropper from "react-cropper";
-import "cropperjs/dist/cropper.css";
-import { RotateCw, RotateCcw, ZoomIn, ZoomOut, Save, X } from "lucide-react";
+import { RotateCw, RotateCcw, ZoomIn, ZoomOut, Save, X, Move } from "lucide-react";
 
 interface ProfileImageEditorProps {
   isOpen: boolean;
@@ -16,64 +14,123 @@ interface ProfileImageEditorProps {
 }
 
 export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: ProfileImageEditorProps) => {
-  const cropperRef = useRef<any>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleRotateLeft = () => {
-    const cropper = cropperRef.current?.cropper;
-    if (cropper) {
-      cropper.rotate(-90);
+  useEffect(() => {
+    if (isOpen && initialImage) {
+      const img = new Image();
+      img.onload = () => {
+        if (imageRef.current) {
+          imageRef.current = img;
+          drawCanvas();
+        }
+      };
+      img.src = initialImage;
+      imageRef.current = img;
     }
+  }, [isOpen, initialImage]);
+
+  const drawCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    const img = imageRef.current;
+    if (!canvas || !img) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const size = 300;
+    canvas.width = size;
+    canvas.height = size;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+
+    // Mover para o centro do canvas
+    ctx.translate(size / 2, size / 2);
+    
+    // Aplicar rotação
+    ctx.rotate((rotation * Math.PI) / 180);
+    
+    // Aplicar posição
+    ctx.translate(position.x, position.y);
+    
+    // Calcular dimensões da imagem
+    const imgAspect = img.width / img.height;
+    let drawWidth = size * scale;
+    let drawHeight = size * scale;
+    
+    if (imgAspect > 1) {
+      drawHeight = drawWidth / imgAspect;
+    } else {
+      drawWidth = drawHeight * imgAspect;
+    }
+
+    // Desenhar imagem centralizada
+    ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+    
+    ctx.restore();
+
+    // Desenhar overlay circular
+    ctx.save();
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.beginPath();
+    ctx.arc(size / 2, size / 2, size / 2, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+  }, [scale, rotation, position]);
+
+  useEffect(() => {
+    drawCanvas();
+  }, [drawCanvas]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y
+    });
   };
 
-  const handleRotateRight = () => {
-    const cropper = cropperRef.current?.cropper;
-    if (cropper) {
-      cropper.rotate(90);
-    }
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    setPosition({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
   };
 
-  const handleZoomIn = () => {
-    const cropper = cropperRef.current?.cropper;
-    if (cropper) {
-      cropper.zoom(0.1);
-    }
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
-  const handleZoomOut = () => {
-    const cropper = cropperRef.current?.cropper;
-    if (cropper) {
-      cropper.zoom(-0.1);
-    }
-  };
+  const handleRotateLeft = () => setRotation(rotation - 90);
+  const handleRotateRight = () => setRotation(rotation + 90);
+  const handleZoomIn = () => setScale(Math.min(scale + 0.1, 3));
+  const handleZoomOut = () => setScale(Math.max(scale - 0.1, 0.1));
 
   const handleSave = async () => {
-    if (!user) return;
-
-    const cropper = cropperRef.current?.cropper;
-    if (!cropper) return;
+    if (!user || !canvasRef.current) return;
 
     setUploading(true);
 
     try {
-      // Obter a imagem cortada como blob
-      cropper.getCroppedCanvas({
-        width: 400,
-        height: 400,
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: 'high'
-      }).toBlob(async (blob: Blob | null) => {
+      canvasRef.current.toBlob(async (blob: Blob | null) => {
         if (!blob) {
           throw new Error('Erro ao processar imagem');
         }
 
-        // Criar arquivo da imagem cortada
         const fileExt = 'jpg';
         const filePath = `${user.id}/avatar.${fileExt}`;
 
-        // Fazer upload da imagem editada
         const { error: uploadError } = await supabase.storage
           .from('media')
           .upload(filePath, blob, {
@@ -85,11 +142,9 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
           throw uploadError;
         }
 
-        // Obter URL pública
         const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-        const newAvatarUrl = `${data.publicUrl}?v=${Date.now()}`; // Cache bust
+        const newAvatarUrl = `${data.publicUrl}?v=${Date.now()}`;
 
-        // Atualizar perfil no banco
         const { error: updateError } = await supabase
           .from('profiles')
           .update({ avatar_url: newAvatarUrl })
@@ -118,24 +173,20 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Editar Foto de Perfil">
       <div className="w-full space-y-4">
-        <div className="relative">
-          <Cropper
-            ref={cropperRef}
-            src={initialImage}
-            style={{ height: 400, width: '100%' }}
-            aspectRatio={1}
-            guides={false}
-            viewMode={1}
-            dragMode="move"
-            scalable={true}
-            cropBoxMovable={true}
-            cropBoxResizable={true}
-            checkOrientation={false}
-            responsive={true}
-            background={false}
-            modal={true}
-            autoCropArea={0.8}
+        <div className="relative flex justify-center">
+          <canvas
+            ref={canvasRef}
+            className="border-2 border-gray-200 rounded-full cursor-move"
+            style={{ width: '300px', height: '300px' }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           />
+          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+            <Move className="w-3 h-3 inline mr-1" />
+            Arraste para mover
+          </div>
         </div>
 
         {/* Controles */}
