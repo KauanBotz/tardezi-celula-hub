@@ -92,13 +92,23 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
     drawCanvas();
   }, [drawCanvas]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const getEventCoordinates = (e: React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in e) {
+      return { clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+    }
+    return { clientX: e.clientX, clientY: e.clientY };
+  };
+
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     
+    const { clientX, clientY } = getEventCoordinates(e);
+    
     setIsDragging(true);
-    const relativeX = e.clientX - rect.left - rect.width / 2;
-    const relativeY = e.clientY - rect.top - rect.height / 2;
+    const relativeX = clientX - rect.left - rect.width / 2;
+    const relativeY = clientY - rect.top - rect.height / 2;
     
     setDragStart({
       x: relativeX - position.x,
@@ -106,13 +116,16 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
     });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging) return;
+    e.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
     
-    const relativeX = e.clientX - rect.left - rect.width / 2;
-    const relativeY = e.clientY - rect.top - rect.height / 2;
+    const { clientX, clientY } = getEventCoordinates(e);
+    
+    const relativeX = clientX - rect.left - rect.width / 2;
+    const relativeY = clientY - rect.top - rect.height / 2;
     
     setPosition({
       x: relativeX - dragStart.x,
@@ -120,7 +133,7 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
     });
   };
 
-  const handleMouseUp = () => {
+  const handleEnd = () => {
     setIsDragging(false);
   };
 
@@ -188,12 +201,15 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
         <div className="relative flex justify-center">
           <canvas
             ref={canvasRef}
-            className="border-2 border-gray-200 rounded-full cursor-move"
+            className="border-2 border-gray-200 rounded-full cursor-move touch-none"
             style={{ width: '300px', height: '300px' }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
+            onMouseDown={handleStart}
+            onMouseMove={handleMove}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
+            onTouchStart={handleStart}
+            onTouchMove={handleMove}
+            onTouchEnd={handleEnd}
           />
           <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
             <Move className="w-3 h-3 inline mr-1" />

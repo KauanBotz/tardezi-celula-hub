@@ -97,19 +97,13 @@ export const AttendanceDashboard = () => {
       return;
     }
 
-    // Remove formatação do telefone e o 9 adicional se existir
-    let cleanPhone = user.phone.replace(/\D/g, '');
-    
-    // Se o número tem 11 dígitos e o 3º dígito é 9, remove o 9
-    if (cleanPhone.length === 11 && cleanPhone[2] === '9') {
-      cleanPhone = cleanPhone.slice(0, 2) + cleanPhone.slice(3);
-    }
+    const cleanPhone = user.phone.replace(/\D/g, '');
     
     const message = encodeURIComponent(
       `Olá ${user.name}! 👋\n\nEsperamos você na próxima reunião da célula! Sentimos sua falta. 🙏\n\nConte conosco para qualquer coisa!\n\nCom carinho,\nEquipe Tardezinha`
     );
     
-    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
+    const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
