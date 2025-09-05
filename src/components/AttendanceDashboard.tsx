@@ -100,10 +100,10 @@ export const AttendanceDashboard = () => {
     const cleanPhone = user.phone.replace(/\D/g, '');
     
     const message = encodeURIComponent(
-      `Olá ${user.name}! 👋\n\nEsperamos você na próxima reunião da célula! Sentimos sua falta. 🙏\n\nConte conosco para qualquer coisa!\n\nCom carinho,\nEquipe Tardezinha`
+      `Olá ${user.name}! \n\nEsperamos você na próxima reunião da célula! Sentimos sua falta. \n\nConte conosco para qualquer coisa!`
     );
     
-    const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
