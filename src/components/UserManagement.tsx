@@ -113,21 +113,21 @@ export const UserManagement = () => {
     leader: 'Líder'
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case "leader": return <Crown className="w-4 h-4 text-white" />;
-      case "leader_trainee": return <Shield className="w-4 h-4 text-white" />;
-      default: return <Users className="w-4 h-4 text-white" />;
-    }
-  };
+const getRoleIcon = (role: string) => {
+  switch (role) {
+    case "leader": return <Crown className="w-4 h-4 text-yellow-600" />; // Dourado no fundo escuro
+    case "leader_trainee": return <Shield className="w-4 h-4 text-blue-700" />; // Azul mais escuro
+    default: return <Users className="w-4 h-4 text-gray-700" />; // Cinza mais escuro
+  }
+};
 
-  const getRoleBadgeVariant = (role: string) => {
-    switch (role) {
-      case "leader": return "default";
-      case "leader_trainee": return "secondary";
-      default: return "outline";
-    }
-  };
+const getRoleBadgeVariant = (role: string) => {
+  switch (role) {
+    case "leader": return "default"; // Fundo escuro, ícone dourado vai contrastar
+    case "leader_trainee": return "secondary"; // Fundo claro, ícone azul escuro vai contrastar  
+    default: return "outline"; // Fundo transparente, ícone cinza escuro vai contrastar
+  }
+};
 
   const handleDeleteUser = (user: Profile) => {
     setDeletingUser(user);
