@@ -115,7 +115,7 @@ export const UserManagement = () => {
 
 const getRoleIcon = (role: string) => {
   switch (role) {
-    case "leader": return <Crown className="w-4 h-4 text-yellow-600" />; // Dourado no fundo escuro
+    case "leader": return <Crown className="w-4 h-4 text-white" />; // Branco no fundo escuro
     case "leader_trainee": return <Shield className="w-4 h-4 text-blue-700" />; // Azul mais escuro
     default: return <Users className="w-4 h-4 text-gray-700" />; // Cinza mais escuro
   }
