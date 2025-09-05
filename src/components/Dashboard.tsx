@@ -283,6 +283,15 @@ export const Dashboard = () => {
                     <span className="text-sm font-medium">Palavra do Dia</span>
                   </Link>
                 </Button>
+
+                {isLeader && (
+                  <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                    <Link to="/frequencia">
+                      <BarChart3 className="w-6 h-6 text-primary" />
+                      <span className="text-sm font-medium">Dashboard Frequência</span>
+                    </Link>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

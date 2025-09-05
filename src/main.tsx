@@ -9,7 +9,8 @@ import { Toaster } from "@/components/ui/toaster";
 import PrayerRequests from "./pages/PrayerRequests.tsx";
 import Testimonies from "./pages/Testimonies.tsx";
 import DailyWord from "./pages/DailyWord.tsx";
-import AdminDashboard from './pages/AdminDashboard.tsx'; // Adicione esta linha
+import AdminDashboard from './pages/AdminDashboard.tsx';
+import AttendanceDashboardPage from './pages/AttendanceDashboardPage.tsx';
 import Settings from './pages/Settings.tsx';
 
 const router = createBrowserRouter([
@@ -30,8 +31,12 @@ const router = createBrowserRouter([
     element: <DailyWord />,
   },
   {
-    path: "/admin", // Adicione esta rota
+    path: "/admin",
     element: <AdminDashboard />,
+  },
+  {
+    path: "/frequencia",
+    element: <AttendanceDashboardPage />,
   },
   {
     path: "/settings",

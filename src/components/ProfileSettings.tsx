@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Save, User, MapPin, Calendar } from "lucide-react";
+import { ProfileImageEditor } from "@/components/ProfileImageEditor";
 
 export const ProfileSettings = () => {
   const { profile, user, loading: authLoading } = useAuth();
@@ -18,6 +19,8 @@ export const ProfileSettings = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedImageFile, setSelectedImageFile] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -52,62 +55,33 @@ export const ProfileSettings = () => {
   async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
     if (!user || !event.target.files || event.target.files.length === 0) return;
     
-    setUploading(true);
     const file = event.target.files[0];
     
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
       toast({ title: "Arquivo inválido", description: "Por favor, selecione apenas imagens.", variant: "destructive" });
-      setUploading(false);
       return;
     }
 
     // Validar tamanho (máximo 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({ title: "Arquivo muito grande", description: "A imagem deve ter no máximo 5MB.", variant: "destructive" });
-      setUploading(false);
       return;
     }
 
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${user.id}/avatar.${fileExt}`;
-
-    try {
-      // Fazer upload da nova imagem
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file, {
-        upsert: true // Substitui se já existir
-      });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Obter URL pública
-      const { data } = supabase.storage.from('media').getPublicUrl(filePath);
-      const newAvatarUrl = data.publicUrl;
-
-      // Atualizar perfil no banco
-      const { error: updateError } = await supabase.from('profiles').update({ 
-        avatar_url: newAvatarUrl 
-      }).eq('user_id', user.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-
-      setAvatarUrl(newAvatarUrl);
-      toast({ title: "Foto de perfil atualizada! ✨" });
-      
-    } catch (error: any) {
-      toast({ 
-        title: "Erro ao atualizar foto", 
-        description: error.message, 
-        variant: "destructive" 
-      });
-    } finally {
-      setUploading(false);
-    }
+    // Criar URL temporária para o editor
+    const imageUrl = URL.createObjectURL(file);
+    setSelectedImageFile(imageUrl);
+    setIsEditorOpen(true);
   }
+
+  const handleImageSave = (newAvatarUrl: string) => {
+    setAvatarUrl(newAvatarUrl);
+    if (selectedImageFile) {
+      URL.revokeObjectURL(selectedImageFile);
+      setSelectedImageFile('');
+    }
+  };
 
   return (
     <Card className="backdrop-blur-sm bg-white/95 border-0 shadow-xl overflow-hidden">
@@ -256,6 +230,22 @@ export const ProfileSettings = () => {
           )}
         </Button>
       </CardContent>
+
+      {/* Editor de imagem */}
+      {isEditorOpen && selectedImageFile && (
+        <ProfileImageEditor
+          isOpen={isEditorOpen}
+          onClose={() => {
+            setIsEditorOpen(false);
+            if (selectedImageFile) {
+              URL.revokeObjectURL(selectedImageFile);
+              setSelectedImageFile('');
+            }
+          }}
+          onSave={handleImageSave}
+          initialImage={selectedImageFile}
+        />
+      )}
     </Card>
   );
 };

@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Edit2, Users, Shield, Crown, Save, X, Sparkles, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
+import { ExportButtons } from "@/components/ExportButtons";
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
@@ -187,19 +188,22 @@ export const UserManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header com botão de adicionar */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h3 className="text-xl font-semibold text-gray-800">Lista de Usuários</h3>
           <p className="text-gray-600">Gerencie todos os membros da comunidade</p>
         </div>
         
-        <Button 
-          onClick={() => setIsCreateModalOpen(true)}
-          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Usuário
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <ExportButtons />
+          <Button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Adicionar Usuário
+          </Button>
+        </div>
       </div>
 
       {/* Tabela moderna */}
