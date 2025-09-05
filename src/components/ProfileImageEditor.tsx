@@ -93,18 +93,30 @@ export const ProfileImageEditor = ({ isOpen, onClose, onSave, initialImage }: Pr
   }, [drawCanvas]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
     setIsDragging(true);
+    const relativeX = e.clientX - rect.left - rect.width / 2;
+    const relativeY = e.clientY - rect.top - rect.height / 2;
+    
     setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
+      x: relativeX - position.x,
+      y: relativeY - position.y
     });
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging) return;
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const relativeX = e.clientX - rect.left - rect.width / 2;
+    const relativeY = e.clientY - rect.top - rect.height / 2;
+    
     setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
+      x: relativeX - dragStart.x,
+      y: relativeY - dragStart.y
     });
   };
 
