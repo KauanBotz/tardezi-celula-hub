@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Clock, Users } from "lucide-react";
+import { PlusCircle, Clock, Users, Edit } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +14,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Modal } from "@/components/ui/modal";
+import { EventEditModal } from "@/components/EventEditModal";
 
 type Event = Database['public']['Tables']['events']['Row'];
 
 // Custom Day Component com tema laranja
-function CustomDay({ date, displayMonth, events }: { date: Date; displayMonth: Date; events: Event[] }) {
+function CustomDay({ date, displayMonth, events, profile, onEditEvent }: { date: Date; displayMonth: Date; events: Event[]; profile: any; onEditEvent: (event: Event) => void }) {
     const eventsForDay = events.filter(event => 
         new Date(event.event_date).toDateString() === date.toDateString()
     );
@@ -93,18 +94,34 @@ function CustomDay({ date, displayMonth, events }: { date: Date; displayMonth: D
                                                         })}
                                                     </span>
                                                 </div>
-                                                {event.description && (
-                                                    <p className="text-xs text-gray-600 line-clamp-2">
-                                                        {event.description}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            {isPastEvent && (
-                                                <Badge variant="secondary" className="text-xs ml-2">
-                                                    Finalizado
-                                                </Badge>
-                                            )}
-                                        </div>
+                                                 {event.description && (
+                                                     <p className="text-xs text-gray-600 line-clamp-2">
+                                                         {event.description}
+                                                     </p>
+                                                 )}
+                                             </div>
+                                             <div className="flex flex-col gap-1">
+                                                 {isPastEvent && (
+                                                     <Badge variant="secondary" className="text-xs">
+                                                         Finalizado
+                                                     </Badge>
+                                                 )}
+                                                  {profile?.role === 'leader' && (
+                                                      <Button
+                                                          size="sm"
+                                                          variant="outline"
+                                                          onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              onEditEvent(event);
+                                                          }}
+                                                          className="h-6 px-2 text-xs"
+                                                      >
+                                                          <Edit className="w-3 h-3 mr-1" />
+                                                          Editar
+                                                      </Button>
+                                                  )}
+                                             </div>
+                                         </div>
                                     </div>
                                 );
                             })}
@@ -118,7 +135,7 @@ function CustomDay({ date, displayMonth, events }: { date: Date; displayMonth: D
     // Dia normal sem evento
     return (
         <div className={cn(
-            "h-9 w-9 flex items-center justify-center rounded-lg transition-all duration-150",
+            "h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-lg transition-all duration-150",
             isToday 
                 ? "bg-orange-100 text-orange-800 font-bold ring-2 ring-orange-300" 
                 : "hover:bg-orange-50 text-gray-700 hover:scale-105"
@@ -132,6 +149,8 @@ export const EventCalendar = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { profile } = useAuth();
   const { toast } = useToast();
 
@@ -157,11 +176,28 @@ export const EventCalendar = () => {
   }, []);
 
   const eventDays = events.map(event => new Date(event.event_date));
-  const upcomingEvents = events.filter(event => new Date(event.event_date) >= new Date()).slice(0, 3);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcomingEvents = events.filter(event => {
+    const eventDate = new Date(event.event_date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  }).slice(0, 3);
 
   const handleEventCreated = () => {
     fetchEvents();
     setIsModalOpen(false);
+  };
+
+  const handleEditEvent = (event: Event) => {
+    setSelectedEvent(event);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEventUpdated = () => {
+    fetchEvents();
+    setIsEditModalOpen(false);
+    setSelectedEvent(null);
   };
 
   return (
@@ -193,62 +229,66 @@ export const EventCalendar = () => {
             <Calendar
               mode="multiple"
               selected={eventDays}
-              className="rounded-lg bg-white p-3 w-full border"
+              className="rounded-lg bg-white p-2 sm:p-3 w-full border"
               classNames={{
                 months: "space-y-4",
                 month: "space-y-4",
-                caption: "flex justify-center pt-1 relative items-center text-lg font-semibold text-gray-800",
-                caption_label: "text-lg font-bold",
+                caption: "flex justify-center pt-1 relative items-center text-base sm:text-lg font-semibold text-gray-800",
+                caption_label: "text-base sm:text-lg font-bold",
                 nav: "space-x-1 flex items-center",
-                nav_button: "h-8 w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full hover:bg-orange-100",
+                nav_button: "h-6 w-6 sm:h-8 sm:w-8 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full hover:bg-orange-100",
                 table: "w-full border-collapse space-y-1",
                 head_row: "flex",
-                head_cell: "text-gray-500 rounded-md w-9 font-medium text-[0.8rem] text-center",
-                row: "flex w-full mt-2",
+                head_cell: "text-gray-500 rounded-md w-8 sm:w-9 font-medium text-[0.7rem] sm:text-[0.8rem] text-center",
+                row: "flex w-full mt-1 sm:mt-2",
                 cell: "text-center text-sm relative p-0 focus-within:relative focus-within:z-20",
-                day: "h-9 w-9 p-0 font-normal aria-selected:opacity-100 rounded-lg",
+                day: "h-8 w-8 sm:h-9 sm:w-9 p-0 font-normal aria-selected:opacity-100 rounded-lg",
                 day_outside: "text-gray-300 opacity-50",
                 day_disabled: "text-gray-300 opacity-50",
                 day_hidden: "invisible",
               }}
               components={{
-                Day: (props) => <CustomDay date={props.date} displayMonth={props.displayMonth} events={events} />
+                Day: (props) => <CustomDay date={props.date} displayMonth={props.displayMonth} events={events} profile={profile} onEditEvent={handleEditEvent} />
               }}
             />
           </div>
           
           {/* Sidebar Próximos Eventos */}
           <div className="space-y-4">
-            <div className="bg-gradient-to-br from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-              <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+            <div className="bg-gradient-to-br from-orange-50 to-red-50 p-3 sm:p-4 rounded-lg border border-orange-200">
+              <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2 text-sm sm:text-base">
                 <Users className="w-4 h-4" />
                 Próximos Eventos
               </h3>
               {upcomingEvents.length > 0 ? (
                 <div className="space-y-3">
-                  {upcomingEvents.map(event => {
-                    const eventDate = new Date(event.event_date);
-                    const daysUntil = Math.ceil((eventDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                    
-                    return (
-                      <div key={event.id} className="bg-white p-3 rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
-                        <h4 className="font-semibold text-gray-800 text-sm mb-1">{event.title}</h4>
-                        <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                          <Clock className="w-3 h-3" />
-                          <span>
-                            {eventDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} às{' '}
-                            {eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <Badge 
-                          variant={daysUntil === 0 ? "default" : daysUntil <= 3 ? "destructive" : "secondary"}
-                          className="text-xs"
-                        >
-                          {daysUntil === 0 ? "Hoje" : daysUntil === 1 ? "Amanhã" : `Em ${daysUntil} dias`}
-                        </Badge>
-                      </div>
-                    );
-                  })}
+                   {upcomingEvents.map(event => {
+                     const eventDate = new Date(event.event_date);
+                     const today = new Date();
+                     today.setHours(0, 0, 0, 0);
+                     const eventDateOnly = new Date(event.event_date);
+                     eventDateOnly.setHours(0, 0, 0, 0);
+                     const daysUntil = Math.ceil((eventDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                     
+                     return (
+                       <div key={event.id} className="bg-white p-3 rounded-lg border border-orange-100 hover:shadow-md transition-shadow">
+                         <h4 className="font-semibold text-gray-800 text-sm mb-1">{event.title}</h4>
+                         <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                           <Clock className="w-3 h-3" />
+                           <span>
+                             {eventDate.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })} às{' '}
+                             {eventDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                           </span>
+                         </div>
+                         <Badge 
+                           variant={daysUntil === 0 ? "default" : daysUntil <= 3 ? "destructive" : "secondary"}
+                           className="text-xs"
+                         >
+                           {daysUntil === 0 ? "Hoje" : daysUntil === 1 ? "Amanhã" : `Em ${daysUntil} dias`}
+                         </Badge>
+                       </div>
+                     );
+                   })}
                 </div>
               ) : (
                 <p className="text-orange-600 text-sm">Nenhum evento próximo 📅</p>
@@ -266,6 +306,14 @@ export const EventCalendar = () => {
       >
         <CreateEventForm onEventCreated={handleEventCreated} />
       </Modal>
+
+      {/* Modal de Editar Evento */}
+      <EventEditModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        event={selectedEvent}
+        onEventUpdated={handleEventUpdated}
+      />
     </Card>
   );
 };
