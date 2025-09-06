@@ -218,22 +218,24 @@ export const Dashboard = () => {
                   Próximos Eventos
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {events.length > 0 ? events.map((event) => {
-                    const eventDate = new Date(event.event_date);
-                    const now = new Date();
-                    const diffTime = eventDate.getTime() - now.getTime();
-                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    let timeLabel = '';
-                    if (diffDays === 0) timeLabel = 'Hoje';
-                    else if (diffDays === 1) timeLabel = 'Amanhã';
-                    else if (diffDays > 1) timeLabel = `Em ${diffDays} dias`;
-                    else timeLabel = 'Passado';
-                    
-                    return (
-                      <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+               <CardContent>
+                 <div className="space-y-3">
+                   {events.length > 0 ? events.map((event) => {
+                     const eventDate = new Date(event.event_date);
+                     const today = new Date();
+                     today.setHours(0, 0, 0, 0);
+                     const eventDateOnly = new Date(event.event_date);
+                     eventDateOnly.setHours(0, 0, 0, 0);
+                     const diffDays = Math.ceil((eventDateOnly.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                     
+                     let timeLabel = '';
+                     if (diffDays === 0) timeLabel = 'Hoje';
+                     else if (diffDays === 1) timeLabel = 'Amanhã';
+                     else if (diffDays > 1) timeLabel = `Em ${diffDays} dias`;
+                     else timeLabel = 'Passado';
+                     
+                     return (
+                       <div key={event.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                         <div>
                           <h4 className="font-medium text-sm">{event.title}</h4>
                           <p className="text-xs text-muted-foreground">

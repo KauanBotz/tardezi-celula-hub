@@ -146,41 +146,47 @@ export const AttendanceDashboard = () => {
           
           return (
             <Card key={userAtt.user.id} className="shadow-medium">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col space-y-4">
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                       <AvatarImage src={userAtt.user.avatar_url || ''} />
                       <AvatarFallback>
                         {userAtt.user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{userAtt.user.name}</h3>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Users2 className="w-4 h-4" />
-                        {userAtt.user.role === 'leader' ? 'Líder' : 
-                         userAtt.user.role === 'leader_trainee' ? 'Líder em Treinamento' : 'Membro'}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{userAtt.user.name}</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Users2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span>
+                            {userAtt.user.role === 'leader' ? 'Líder' : 
+                             userAtt.user.role === 'leader_trainee' ? 'Líder em Treinamento' : 'Membro'}
+                          </span>
+                        </div>
                         {userAtt.user.phone && (
                           <>
-                            <span>•</span>
-                            <Phone className="w-4 h-4" />
-                            {userAtt.user.phone}
+                            <span className="hidden sm:inline">•</span>
+                            <div className="flex items-center gap-1">
+                              <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span className="truncate">{userAtt.user.phone}</span>
+                            </div>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="text-center sm:text-right">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center justify-center sm:justify-end gap-2 mb-1">
                         <div className={`w-2 h-2 rounded-full ${status.color}`}></div>
                         <Badge variant="outline">{status.text}</Badge>
                       </div>
-                      <p className="text-2xl font-bold">{userAtt.attendanceRate.toFixed(0)}%</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xl sm:text-2xl font-bold">{userAtt.attendanceRate.toFixed(0)}%</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {userAtt.presentEvents} de {userAtt.totalEvents} reuniões
                       </p>
                       {userAtt.lastAttendance && (
@@ -189,17 +195,6 @@ export const AttendanceDashboard = () => {
                         </p>
                       )}
                     </div>
-
-                    {needsAttention && (
-                      <Button
-                        onClick={() => handleWhatsAppMessage(userAtt.user)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        size="sm"
-                      >
-                        <MessageCircle className="w-4 h-4 mr-2" />
-                        WhatsApp
-                      </Button>
-                    )}
                   </div>
                 </div>
               </CardContent>
