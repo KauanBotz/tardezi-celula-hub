@@ -35,7 +35,7 @@ export const UserManagement = () => {
     name: "",
     email: "",
     address: "",
-    age: "",
+    birth_date: "",
     phone: "",
     role: "user" as "user" | "leader_trainee" | "leader"
   });
@@ -63,9 +63,9 @@ export const UserManagement = () => {
     setEditFormData({
       name: user.name,
       email: user.email,
-      address: user.address || "",
-      age: user.age?.toString() || "",
-      phone: user.phone || "",
+    address: user.address || "",
+    birth_date: user.birth_date || "",
+    phone: user.phone || "",
       role: user.role
     });
     setIsEditModalOpen(true);
@@ -82,7 +82,7 @@ export const UserManagement = () => {
         name: editFormData.name,
         email: editFormData.email,
         address: editFormData.address || null,
-        age: editFormData.age ? parseInt(editFormData.age) : null,
+        birth_date: editFormData.birth_date || null,
         phone: editFormData.phone || null,
         role: editFormData.role
       })
@@ -214,7 +214,7 @@ const getRoleBadgeVariant = (role: string) => {
               <TableHead className="font-semibold text-gray-700 py-4">Nome</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Email</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Telefone</TableHead>
-              <TableHead className="font-semibold text-gray-700 py-4">Idade</TableHead>
+              <TableHead className="font-semibold text-gray-700 py-4">Aniversário</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4">Função</TableHead>
               <TableHead className="font-semibold text-gray-700 py-4 text-center">Ações</TableHead>
             </TableRow>
@@ -244,7 +244,12 @@ const getRoleBadgeVariant = (role: string) => {
                   <TableCell className="font-medium py-4">{user.name}</TableCell>
                   <TableCell className="text-gray-600 py-4">{user.email}</TableCell>
                   <TableCell className="text-gray-600 py-4">{user.phone || 'N/A'}</TableCell>
-                  <TableCell className="text-gray-600 py-4">{user.age || 'N/A'}</TableCell>
+                  <TableCell className="text-gray-600 py-4">
+                    {user.birth_date 
+                      ? new Date(user.birth_date).toLocaleDateString('pt-BR')
+                      : 'N/A'
+                    }
+                  </TableCell>
                   <TableCell className="py-4">
                     <Badge 
                       variant={getRoleBadgeVariant(user.role)}

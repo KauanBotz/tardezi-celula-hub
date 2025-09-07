@@ -32,6 +32,10 @@ const router = createBrowserRouter([
     element: <DailyWord />,
   },
   {
+    path: "/devocionais",
+    element: <Devotionals />,
+  },
+  {
     path: "/admin",
     element: <AdminDashboard />,
   },
@@ -42,10 +46,6 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <Settings />,
-  },
-  {
-    path: "/devocionais",
-    element: <Devotionals />,
   },
   {
     path: "*",

@@ -255,7 +255,7 @@ export const Dashboard = () => {
             </Card>
           </div>
 
-          {/* Menu de Acesso Rápido */}
+            {/* Menu de Acesso Rápido */}
           <Card className="shadow-medium">
             <CardHeader>
               <CardTitle>Acesso Rápido</CardTitle>
@@ -280,8 +280,15 @@ export const Dashboard = () => {
                 </Button>
                 
                 <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
-                  <Link to="/palavra-do-dia">
+                  <Link to="/devocionais">
                     <BookOpen className="w-6 h-6 text-primary" />
+                    <span className="text-sm font-medium">Devocionais</span>
+                  </Link>
+                </Button>
+                
+                <Button asChild variant="outline" className="h-auto p-4 flex flex-col items-center gap-2">
+                  <Link to="/palavra-do-dia">
+                    <Sun className="w-6 h-6 text-primary" />
                     <span className="text-sm font-medium">Palavra do Dia</span>
                   </Link>
                 </Button>

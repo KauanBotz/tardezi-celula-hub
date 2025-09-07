@@ -17,7 +17,7 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
     email: "",
     address: "",
     password: "",
-    age: "",
+    birth_date: "",
     phone: "",
     role: "user" as "user" | "leader_trainee" | "leader"
   });
@@ -32,7 +32,7 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
       email: formData.email,
       password: formData.password,
       address: formData.address,
-      age: formData.age,
+      birth_date: formData.birth_date,
       phone: formData.phone,
       role: formData.role
     });
@@ -48,7 +48,7 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
         email: "",
         address: "",
         password: "",
-        age: "",
+        birth_date: "",
         phone: "",
         role: "user"
       });
@@ -137,18 +137,16 @@ export const CreateUser = ({ onUserCreated }: CreateUserProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="age" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="birth_date" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-              Idade
+              Data de Aniversário
             </Label>
             <Input
-              id="age"
-              type="number"
-              value={formData.age}
-              onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-              placeholder="Ex: 25"
-              min="1"
-              max="120"
+              id="birth_date"
+              type="date"
+              value={formData.birth_date}
+              onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+              placeholder="Selecione a data de nascimento"
               className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
             />
           </div>

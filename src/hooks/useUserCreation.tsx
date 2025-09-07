@@ -11,7 +11,7 @@ export const useUserCreation = () => {
     email: string;
     password: string;
     address?: string;
-    age?: string;
+    birth_date?: string;
     phone?: string;
     role: 'user' | 'leader_trainee' | 'leader';
   }) => {
