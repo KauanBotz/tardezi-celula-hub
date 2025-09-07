@@ -12,6 +12,7 @@ import DailyWord from "./pages/DailyWord.tsx";
 import AdminDashboard from './pages/AdminDashboard.tsx';
 import AttendanceDashboardPage from './pages/AttendanceDashboardPage.tsx';
 import Settings from './pages/Settings.tsx';
+import Devotionals from './pages/Devotionals.tsx';
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <Settings />,
+  },
+  {
+    path: "/devocionais",
+    element: <Devotionals />,
   },
   {
     path: "*",
