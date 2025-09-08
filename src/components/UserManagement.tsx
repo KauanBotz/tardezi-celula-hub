@@ -340,15 +340,15 @@ const getRoleBadgeVariant = (role: string) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-age" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <Label htmlFor="edit-birth_date" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  Idade
+                  Data de Nascimento
                 </Label>
                 <Input
-                  id="edit-age"
-                  type="number"
-                  value={editFormData.age}
-                  onChange={(e) => setEditFormData({ ...editFormData, age: e.target.value })}
+                  id="edit-birth_date"
+                  type="date"
+                  value={editFormData.birth_date}
+                  onChange={(e) => setEditFormData({ ...editFormData, birth_date: e.target.value })}
                   placeholder="Ex: 25"
                   min="1"
                   max="120"

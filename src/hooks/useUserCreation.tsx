@@ -25,14 +25,12 @@ export const useUserCreation = () => {
       const signUpData = {
         name: userData.name,
         address: userData.address,
-        age: userData.age && userData.age.trim() !== '' ? parseInt(userData.age) : undefined,
+        birth_date: userData.birth_date,
         phone: userData.phone,
         role: userData.role
       };
       
       console.log('Dados para signUp:', signUpData);
-      console.log('Idade original:', userData.age);
-      console.log('Idade processada:', signUpData.age);
       
       // Criar o novo usuário
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -67,13 +65,12 @@ export const useUserCreation = () => {
             name: userData.name,
             email: userData.email,
             address: userData.address || null,
-            age: userData.age && userData.age.trim() !== '' ? parseInt(userData.age) : null,
+            birth_date: userData.birth_date || null,
             phone: userData.phone || null,
             role: userData.role
           };
           
           console.log('Criando perfil manualmente:', profileData);
-          console.log('Idade no perfil:', profileData.age);
           
           const { error: profileError } = await supabase
             .from('profiles')
@@ -91,13 +88,12 @@ export const useUserCreation = () => {
             name: userData.name,
             email: userData.email,
             address: userData.address || null,
-            age: userData.age && userData.age.trim() !== '' ? parseInt(userData.age) : null,
+            birth_date: userData.birth_date || null,
             phone: userData.phone || null,
             role: userData.role
           };
           
           console.log('Atualizando perfil existente:', updateData);
-          console.log('Idade para atualizar:', updateData.age);
           
           const { error: updateError } = await supabase
             .from('profiles')

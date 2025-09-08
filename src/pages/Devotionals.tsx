@@ -50,13 +50,7 @@ export default function Devotionals() {
     try {
       const { data, error } = await supabase
         .from('devotionals')
-        .select(`
-          *,
-          profiles (
-            name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
