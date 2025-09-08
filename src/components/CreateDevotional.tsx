@@ -155,7 +155,7 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
     <div className="space-y-4">
       <div>
         <Label htmlFor="title" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
           Título
         </Label>
         <Input
@@ -163,14 +163,14 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Digite o título do devocional"
-          className="border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+          className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
           required
         />
       </div>
 
       <div>
         <Label htmlFor="content" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
           Conteúdo
         </Label>
         <Textarea
@@ -178,7 +178,7 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Compartilhe seu devocional..."
-          className="border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-base transition-all duration-200 min-h-[120px]"
+          className="border-2 border-gray-200 focus:border-orange-500 focus:ring-orange-500/20 rounded-xl px-4 py-3 text-base transition-all duration-200 min-h-[120px]"
           rows={6}
           required
         />
@@ -186,7 +186,7 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
 
       <div>
         <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
           Imagem (opcional)
         </Label>
         <div className="mt-2">
@@ -200,11 +200,11 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
           />
           <label
             htmlFor="image-upload"
-            className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition-colors"
+            className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-orange-500 transition-colors"
           >
             {selectedFile ? (
               <div className="flex items-center space-x-2">
-                <Image className="h-6 w-6 text-blue-600" />
+                <Image className="h-6 w-6 text-orange-600" />
                 <span className="text-sm text-gray-600">{selectedFile.name}</span>
                 <Button
                   type="button"
@@ -233,7 +233,7 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-xl shadow-lg"
+          className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-2 rounded-xl shadow-lg"
         >
           {isSubmitting ? "Criando..." : "Criar Devocional"}
         </Button>

@@ -72,7 +72,7 @@ export default function Devotionals() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
           <Card className="text-center py-12">
             <CardContent>
@@ -88,12 +88,12 @@ export default function Devotionals() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
         <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
           <Card className="text-center py-12">
             <CardContent>
-              <div className="flex items-center justify-center gap-3 text-blue-600">
-                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="flex items-center justify-center gap-3 text-orange-600">
+                <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
                 Carregando devocionais...
               </div>
             </CardContent>
@@ -104,24 +104,24 @@ export default function Devotionals() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* Header com gradiente */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 mb-8 text-white shadow-xl">
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 mb-8 text-white shadow-xl">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-white/20 rounded-xl">
               <BookOpen className="w-8 h-8" />
             </div>
             <div>
               <h1 className="text-3xl font-bold">Devocionais</h1>
-              <p className="text-blue-100 text-lg mt-1">Compartilhe momentos de reflexão e fé</p>
+              <p className="text-orange-100 text-lg mt-1">Compartilhe momentos de reflexão e fé</p>
             </div>
           </div>
         </div>
 
         {/* Botão voltar */}
         <div className="mb-6">
-          <Button asChild variant="outline" className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400">
+          <Button asChild variant="outline" className="border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400">
             <Link to="/">
               <ArrowLeft className="mr-2 h-4 w-4" /> 
               Voltar para o Dashboard
@@ -133,7 +133,7 @@ export default function Devotionals() {
         <div className="mb-6">
           <Button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg"
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-3 rounded-xl shadow-lg"
           >
             <Plus className="mr-2 h-5 w-5" />
             Novo Devocional
@@ -152,7 +152,7 @@ export default function Devotionals() {
                 </p>
                 <Button 
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   Criar Primeiro Devocional
@@ -173,7 +173,7 @@ export default function Devotionals() {
                           target.style.display = 'none';
                         }}
                       />
-                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-sm">
+                      <AvatarFallback className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm">
                         {devotional.profiles?.name?.charAt(0) || "U"}
                       </AvatarFallback>
                     </Avatar>
