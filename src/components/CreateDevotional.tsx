@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { Upload, X, Image } from "lucide-react";
 
 interface CreateDevotionalProps {
@@ -15,6 +15,7 @@ interface CreateDevotionalProps {
 
 export default function CreateDevotional({ onDevotionalCreated }: CreateDevotionalProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -27,7 +28,11 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
       if (file.type.startsWith('image/')) {
         setSelectedFile(file);
       } else {
-        toast.error("Por favor, selecione apenas arquivos de imagem");
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione apenas arquivos de imagem",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -69,12 +74,20 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
     e.preventDefault();
     
     if (!user) {
-      toast.error("Você precisa estar logado para criar um devocional");
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para criar um devocional",
+        variant: "destructive",
+      });
       return;
     }
 
     if (!title.trim() || !content.trim()) {
-      toast.error("Por favor, preencha o título e o conteúdo");
+      toast({
+        title: "Erro",
+        description: "Por favor, preencha o título e o conteúdo",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -86,7 +99,11 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
       if (selectedFile) {
         imageUrl = await uploadImage(selectedFile);
         if (!imageUrl) {
-          toast.error("Erro ao fazer upload da imagem");
+          toast({
+            title: "Erro",
+            description: "Erro ao fazer upload da imagem",
+            variant: "destructive",
+          });
           setIsSubmitting(false);
           return;
         }
@@ -103,11 +120,18 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
 
       if (error) {
         console.error('Error creating devotional:', error);
-        toast.error("Erro ao criar devocional");
+        toast({
+          title: "Erro",
+          description: "Erro ao criar devocional",
+          variant: "destructive",
+        });
         return;
       }
 
-      toast.success("Devocional criado com sucesso!");
+      toast({
+        title: "Sucesso",
+        description: "Devocional criado com sucesso!",
+      });
       setTitle("");
       setContent("");
       setSelectedFile(null);
@@ -117,89 +141,103 @@ export default function CreateDevotional({ onDevotionalCreated }: CreateDevotion
       onDevotionalCreated?.();
     } catch (error) {
       console.error('Error:', error);
-      toast.error("Erro inesperado ao criar devocional");
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao criar devocional",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Card className="p-6">
-      <h2 className="text-xl font-semibold mb-4 text-pink-800">Criar Devocional</h2>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="title">Título</Label>
-          <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Digite o título do devocional"
-            required
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="title" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          Título
+        </Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Digite o título do devocional"
+          className="border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-12 px-4 text-base transition-all duration-200"
+          required
+        />
+      </div>
+
+      <div>
+        <Label htmlFor="content" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          Conteúdo
+        </Label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Compartilhe seu devocional..."
+          className="border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl px-4 py-3 text-base transition-all duration-200 min-h-[120px]"
+          rows={6}
+          required
+        />
+      </div>
+
+      <div>
+        <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          Imagem (opcional)
+        </Label>
+        <div className="mt-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+            id="image-upload"
           />
+          <label
+            htmlFor="image-upload"
+            className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition-colors"
+          >
+            {selectedFile ? (
+              <div className="flex items-center space-x-2">
+                <Image className="h-6 w-6 text-blue-600" />
+                <span className="text-sm text-gray-600">{selectedFile.name}</span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    removeFile();
+                  }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center">
+                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                <span className="text-sm text-gray-600">Clique para adicionar uma imagem</span>
+              </div>
+            )}
+          </label>
         </div>
+      </div>
 
-        <div>
-          <Label htmlFor="content">Conteúdo</Label>
-          <Textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Compartilhe seu devocional..."
-            rows={6}
-            required
-          />
-        </div>
-
-        <div>
-          <Label>Imagem (opcional)</Label>
-          <div className="mt-2">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-              id="image-upload"
-            />
-            <label
-              htmlFor="image-upload"
-              className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-pink-400 transition-colors"
-            >
-              {selectedFile ? (
-                <div className="flex items-center space-x-2">
-                  <Image className="h-6 w-6 text-pink-600" />
-                  <span className="text-sm text-gray-600">{selectedFile.name}</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      removeFile();
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center">
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <span className="text-sm text-gray-600">Clique para adicionar uma imagem</span>
-                </div>
-              )}
-            </label>
-          </div>
-        </div>
-
+      <div className="flex gap-3 pt-4">
         <Button 
-          type="submit" 
+          type="button"
+          onClick={handleSubmit}
           disabled={isSubmitting}
-          className="w-full bg-pink-600 hover:bg-pink-700"
+          className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 py-2 rounded-xl shadow-lg"
         >
           {isSubmitting ? "Criando..." : "Criar Devocional"}
         </Button>
-      </form>
-    </Card>
+      </div>
+    </div>
   );
 }
